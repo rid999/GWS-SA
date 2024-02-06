@@ -1,4 +1,4 @@
-# Function to print a green checkmark
+# Function to print a green checkmarkk
 print_check() {
   echo -e "[\e[32m✔\e[0m] Verified"
 }
