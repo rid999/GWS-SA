@@ -22,34 +22,40 @@ apis=(
   "storage-component.googleapis.com"
 )
 
-# Check and enable APIs that are not verified
-echo "--------------------------------------------------------"
-echo "   Service                             |   Status"
-echo "--------------------------------------------------------"
-
+# Check if all APIs are already enabled
+all_enabled=true
 for api in "${apis[@]}"; do
   status=$(gcloud services list --format="value(NAME)" --filter="NAME:$api")
-  
+  [[ "$status" != "$api" ]] && all_enabled=false
+done
+
+# Enable APIs if not all are enabled
+if ! $all_enabled; then
+  echo "Enabling APIs..."
+  for api in "${apis[@]}"; do
+    gcloud services enable "$api"
+  done
+fi
+
+# Print summary
+echo "Checking if APIs have been enabled:"
+for api in "${apis[@]}"; do
+  status=$(gcloud services list --format="value(NAME)" --filter="NAME:$api")
   if [[ "$status" == "$api" ]]; then
     status_message=$(print_check)
   else
     status_message=$(print_cross)
-    echo "Enabling $api..."
-    gcloud services enable "$api"
-    status_message+=" (Enabled)"
   fi
-  
   printf "| %-38s | %-20s |\n" "$api" "$status_message"
 done
 
-echo "--------------------------------------------------------"
-
-# Double-check the status after enabling
-echo "Double-checking API status after enabling:"
-for api in "${apis[@]}"; do
-  status=$(gcloud services list --format="value(NAME)" --filter="NAME:$api")
-  [[ "$status" == "$api" ]] && status_message=$(print_check) || status_message=$(print_cross)
-  printf "| %-38s | %-20s |\n" "$api" "$status_message"
-done
-
-echo "--------------------------------------------------------"
+if $all_enabled; then
+  echo "All APIs are enabled. No need to double-check."
+else
+  echo "Double-checking API status after enabling:"
+  for api in "${apis[@]}"; do
+    status=$(gcloud services list --format="value(NAME)" --filter="NAME:$api")
+    [[ "$status" == "$api" ]] && status_message=$(print_check) || status_message=$(print_cross)
+    printf "| %-38s | %-20s |\n" "$api" "$status_message"
+  done
+fi
