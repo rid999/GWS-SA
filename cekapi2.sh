@@ -24,26 +24,23 @@ apis=(
 
 # Check and enable APIs that are not verified
 echo "--------------------------------------------------------"
-echo "   Service                               |   Status"
+echo "   Service                             |   Status"
 echo "--------------------------------------------------------"
 
 for api in "${apis[@]}"; do
   status=$(gcloud services list --format="value(NAME)" --filter="NAME:$api")
-  
+
   if [[ "$status" == "$api" ]]; then
     status_message=$(print_check)
   else
     status_message=$(print_cross)
     echo "Enabling $api..."
-    gcloud services enable "$api"
+    gcloud services enable "$api" --project=project-gmail-custom-command
     status_message+=" (Enabled)"
-  fi
-  
-  printf "| %-38s | %-20s |\n" "$api" "$status_message"
-
-  if [[ "$status_message" == *"Enabled"* ]]; then
     read -p "Press Enter to continue..."
   fi
+
+  printf "| %-38s | %-20s |\n" "$api" "$status_message"
 done
 
 echo "--------------------------------------------------------"
