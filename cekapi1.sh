@@ -1,11 +1,8 @@
-# Generate a random number between 1000 and 9999
-random_number=$((RANDOM % 9000 + 1000))
-
-# Get the current date in YYYYMMDD format
-current_date=$(date "+%Y%m%d")
+# Generate an 8-digit random number
+random_number=$(printf "%08d\n" $((RANDOM % 100000000)))
 
 # Custom name for the project
-project_name="migration-$random_number-$current_date"
+project_name="Migration-$random_number"
 
 # Create a new Google Cloud project
 gcloud projects create "$project_name"
