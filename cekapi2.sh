@@ -1,11 +1,6 @@
-# Function to print a green checkmark
-print_check() {
-  echo -e "[\e[32m✔\e[0m] Verified"
-}
-
 # Function to print a red cross
 print_cross() {
-  echo -e "[\e[31m✘\e[0m] Not Verified"
+  echo -e "[\e[31m✘\e[0m] Not Enabled"
 }
 
 # Function to enable API
@@ -17,34 +12,39 @@ enable_api() {
 
 # List of APIs to check and enable
 apis=(
-  "admin.googleapis.com"
-  "drive.googleapis.com"
-  "gmail.googleapis.com"
-  "calendar-json.googleapis.com"
-  "people.googleapis.com"
-  "tasks.googleapis.com"
-  "forms.googleapis.com"
-  "groupsmigration.googleapis.com"
-  "vault.googleapis.com"
-  "storage-component.googleapis.com"
+  "1. admin.googleapis.com"
+  "2. drive.googleapis.com"
+  "3. gmail.googleapis.com"
+  "4. calendar-json.googleapis.com"
+  "5. people.googleapis.com"
+  "6. tasks.googleapis.com"
+  "7. forms.googleapis.com"
+  "8. groupsmigration.googleapis.com"
+  "9. vault.googleapis.com"
+  "10. storage-component.googleapis.com"
 )
 
 echo "Checking if APIs have been enabled:"
-echo "--------------------------------------------------------"
+echo "------------------------------------------------------------------"
+echo "| API # | Service                                 | Status      |"
+echo "------------------------------------------------------------------"
 
 # Check and enable APIs that are not verified
-for api in "${apis[@]}"; do
-  status=$(gcloud services list --format="value(NAME)" --filter="NAME:$api")
+for ((i=0; i<${#apis[@]}; i++)); do
+  api="${apis[$i]}"
+  api_number=$(echo "$api" | cut -d' ' -f1)
+  api_name=$(echo "$api" | cut -d' ' -f2-)
+  status=$(gcloud services list --format="value(NAME)" --filter="NAME:$api_name")
 
-  if [[ "$status" == "$api" ]]; then
-    status_message=$(print_check)
-  else
-    status_message=$(print_cross)
-    enable_api "$api"
-    status_message+=" (Enabled)"
+  if [[ "$status" != "$api_name" ]]; then
+    enable_api "$api_name"
+    status=$(gcloud services list --format="value(NAME)" --filter="NAME:$api_name")
   fi
 
-  printf "| %-38s | %-20s |\n" "$api" "$status_message"
+  status_message=$(print_cross)
+  [[ "$status" == "$api_name" ]] && status_message="Enabled"
+
+  printf "| %-5s | %-38s | %-11s |\n" "$api_number" "$api_name" "$status_message"
 done
 
-echo "--------------------------------------------------------"
+echo "------------------------------------------------------------------"
