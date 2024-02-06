@@ -50,7 +50,7 @@ for api in "${apis[@]}"; do
 done
 
 if $all_enabled; then
-  echo "Note: All APIs are enabled."
+  echo "Finished, All APIs are enabled."
 else
   echo "Double-checking API status after enabling:"
   for api in "${apis[@]}"; do
