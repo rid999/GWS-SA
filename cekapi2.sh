@@ -1,11 +1,13 @@
-# Function to print a green checkmark
-print_check() {
-  echo -e "[\e[32m✔\e[0m] Verified"
+# Function to check if API is enabled
+check_api_status() {
+  api_status=$(gcloud services list --format="value(NAME,STATUS)" --filter="NAME:$1" | cut -f2)
+  [[ "$api_status" == "ENABLED" ]] && echo -e "[\e[32m✔\e[0m] Enabled" || echo -e "[\e[31m✘\e[0m] Disabled"
 }
 
-# Function to print a red cross
-print_cross() {
-  echo -e "[\e[31m✘\e[0m] Not Verified"
+# Function to enable API
+enable_api() {
+  echo "Enabling $1..."
+  gcloud services enable "$1"
 }
 
 # List of APIs to check and enable
@@ -22,40 +24,22 @@ apis=(
   "storage-component.googleapis.com"
 )
 
-# Check if all APIs are already enabled
-all_enabled=true
-for api in "${apis[@]}"; do
-  status=$(gcloud services list --format="value(NAME)" --filter="NAME:$api")
-  [[ "$status" != "$api" ]] && all_enabled=false
-done
-
 # Enable APIs if not all are enabled
-if ! $all_enabled; then
-  echo "Enabling APIs..."
-  for api in "${apis[@]}"; do
-    gcloud services enable "$api"
-  done
-fi
+for api in "${apis[@]}"; do
+  gcloud services enable "$api" 2>/dev/null
+done
 
 # Print summary
 echo "Checking if APIs have been enabled:"
 for api in "${apis[@]}"; do
-  status=$(gcloud services list --format="value(NAME)" --filter="NAME:$api")
-  if [[ "$status" == "$api" ]]; then
-    status_message=$(print_check)
-  else
-    status_message=$(print_cross)
-  fi
+  status_message=$(check_api_status "$api")
   printf "| %-38s | %-20s |\n" "$api" "$status_message"
 done
 
-if $all_enabled; then
-  echo "Finished, All APIs are enabled."
-else
-  echo "Double-checking API status after enabling:"
-  for api in "${apis[@]}"; do
-    status=$(gcloud services list --format="value(NAME)" --filter="NAME:$api")
-    [[ "$status" == "$api" ]] && status_message=$(print_check) || status_message=$(print_cross)
-    printf "| %-38s | %-20s |\n" "$api" "$status_message"
-  done
-fi
+# Enable disabled APIs
+echo "Enabling disabled APIs:"
+for api in "${apis[@]}"; do
+  if [[ "$(check_api_status "$api")" == "[✘] Disabled" ]]; then
+    enable_api "$api"
+  fi
+done
