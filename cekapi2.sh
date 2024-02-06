@@ -24,7 +24,7 @@ apis=(
 
 # Check and enable APIs that are not verified
 echo "--------------------------------------------------------"
-echo "   Service                             |   Status"
+echo "   Service                               |   Status"
 echo "--------------------------------------------------------"
 
 for api in "${apis[@]}"; do
