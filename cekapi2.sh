@@ -40,6 +40,10 @@ for api in "${apis[@]}"; do
   fi
   
   printf "| %-38s | %-20s |\n" "$api" "$status_message"
+
+  if [[ "$status_message" == *"Enabled"* ]]; then
+    read -p "Press Enter to continue..."
+  fi
 done
 
 echo "--------------------------------------------------------"
